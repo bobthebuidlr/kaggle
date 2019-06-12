@@ -29,37 +29,58 @@ def load_data(files=None):
 
 def train_to_vec(train, structures):
     """ Convert training data to one-hot encoded matrix of shape=(N, 145) """
+    # TODO: Extend to also include atom pairs and their distance
 
     unique_atoms = ('C', 'H', 'N', 'O', 'F')
     max_atoms_per_molecule = 29
 
-    # Initialize matrix
-    Xtrain = np.zeros((len(train), (len(unique_atoms) * max_atoms_per_molecule)))
-
     # List all unique molecule names
     molecules = structures['molecule_name'].unique()
 
+    # Initialize matrix
+    Xtrain = np.zeros((len(molecules) - 1, (len(unique_atoms) * max_atoms_per_molecule)))
+
+    structures = structures.values
+
+    # Index for molecules
     j = 0
-    for molecule in tqdm(molecules):
 
-        # Initialize 0 matrix with (maximum molecules x unique atoms)
-        mat = np.zeros((max_atoms_per_molecule, len(unique_atoms)))
-        i = 0
+    # Index for row in structures
+    i = -1
 
-        # List every atom of the molecule
-        for atom in structures[structures['molecule_name'] == molecule].atom:
+    # Index for atom in molecule
+    k = -1
 
-            # One hot encode atom within matrix
-            mat[i, unique_atoms.index(atom)] = 1
-            i += 1
+    # Inititalize matrix of 0's per molecule
+    mat = np.zeros((max_atoms_per_molecule, len(unique_atoms)))
 
-        # Stack matrix columns on top of each other to create 1 vector
-        vec = mat.reshape((1, 145))
+    for row in tqdm(structures):
+        i += 1
 
-        # Append the vector to Xtrain
-        Xtrain[j, :] = vec
+        # Molecule name of current row
+        molecule = molecules[j]
 
-        # Increase index for Xtrain
-        j += 1
+        # Atom name of current row
+        atom = row[2]
+
+        # If current molecule is molecule in scope
+        if row[0] == molecule:
+            k += 1
+            mat[k, unique_atoms.index(atom)] = 1
+
+        # If molecule does not match -> next molecule
+        else:
+            # Flatten molecule in scope and append to Xtrain
+            vec = mat.reshape((1, 145))
+            Xtrain[j, :] = vec
+
+            # Start new molecule matrix
+            mat = np.zeros((max_atoms_per_molecule, len(unique_atoms)))
+            k = 0
+
+            # And append current value to new matrix
+            mat[k, unique_atoms.index(atom)] = 1
+
+            j += 1
 
     return Xtrain

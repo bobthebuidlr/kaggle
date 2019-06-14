@@ -27,9 +27,11 @@ def load_data(files=None):
     return tuple(dataframes)
 
 
-def train_to_vec(train, structures):
+def molecule_to_vec():
     """ Convert training data to one-hot encoded matrix of shape=(N, 145) """
     # TODO: Extend to also include atom pairs and their distance
+
+    train, structures = load_data('train, structures')
 
     unique_atoms = ('C', 'H', 'N', 'O', 'F')
     max_atoms_per_molecule = 29
@@ -38,7 +40,8 @@ def train_to_vec(train, structures):
     molecules = structures['molecule_name'].unique()
 
     # Initialize matrix
-    Xtrain = np.zeros((len(molecules) - 1, (len(unique_atoms) * max_atoms_per_molecule)))
+    molecule_vecs = np.zeros((len(molecules) - 1, (len(unique_atoms) * max_atoms_per_molecule)))
+    Xtrain = np.zeros((len(train)), 158)
 
     structures = structures.values
 
@@ -72,7 +75,7 @@ def train_to_vec(train, structures):
         else:
             # Flatten molecule in scope and append to Xtrain
             vec = mat.reshape((1, 145))
-            Xtrain[j, :] = vec
+            molecule_vecs[j, :] = vec
 
             # Start new molecule matrix
             mat = np.zeros((max_atoms_per_molecule, len(unique_atoms)))
@@ -83,4 +86,8 @@ def train_to_vec(train, structures):
 
             j += 1
 
-    return Xtrain
+    return molecule_vecs
+
+
+
+

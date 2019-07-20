@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-from utils import utils
+import utils
 
 try:
     os.chdir('/Users/bobvanderhelm/datasets/champs-scalar-coupling/')
